@@ -34,7 +34,7 @@
 #if (AVRC_INCLUDED == TRUE)
 
 #ifndef AVDT_DEBUG
-#define AVDT_DEBUG  FALSE
+#define AVDT_DEBUG  TRUE
 #endif
 
 /*****************************************************************************
