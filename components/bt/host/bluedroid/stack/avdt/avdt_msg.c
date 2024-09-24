@@ -888,6 +888,7 @@ static UINT8 avdt_msg_prs_reconfig_cmd(tAVDT_MSG *p_msg, UINT8 *p, UINT16 len)
             }
         }
     }
+    AVDT_TRACE_DEBUG("avdt_msg_prs_reconfig_cmd err=%d", err);
     return err;
 }
 

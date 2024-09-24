@@ -425,6 +425,8 @@ UINT16 AVDT_GetCapReq(BD_ADDR bd_addr, UINT8 seid, tAVDT_CFG *p_cfg, tAVDT_CTRL_
 {
     tAVDT_CCB_API_GETCAP    getcap;
 
+    AVDT_TRACE_DEBUG("AVDT_GetCapReq");
+
     getcap.single.seid = seid;
     getcap.single.sig_id = AVDT_SIG_GETCAP;
     getcap.p_cfg = p_cfg;
@@ -459,6 +461,8 @@ UINT16 AVDT_GetCapReq(BD_ADDR bd_addr, UINT8 seid, tAVDT_CFG *p_cfg, tAVDT_CTRL_
 UINT16 AVDT_GetAllCapReq(BD_ADDR bd_addr, UINT8 seid, tAVDT_CFG *p_cfg, tAVDT_CTRL_CBACK *p_cback)
 {
     tAVDT_CCB_API_GETCAP    getcap;
+
+    AVDT_TRACE_DEBUG("AVDT_GetAllCapReq");
 
     getcap.single.seid = seid;
     getcap.single.sig_id = AVDT_SIG_GET_ALLCAP;
@@ -571,6 +575,8 @@ UINT16 AVDT_ConfigRsp(UINT8 handle, UINT8 label, UINT8 error_code, UINT8 categor
     tAVDT_SCB_EVT   evt;
     UINT16          result = AVDT_SUCCESS;
     UINT8           event_code;
+
+    AVDT_TRACE_DEBUG("AVDT_ConfigRsp: label: %d, error_code: %d, category %d", label, error_code, category);
 
     /* map handle to scb */
     if ((p_scb = avdt_scb_by_hdl(handle)) == NULL) {
@@ -744,6 +750,8 @@ UINT16 AVDT_ReconfigReq(UINT8 handle, tAVDT_CFG *p_cfg)
     tAVDT_SCB       *p_scb;
     UINT16          result = AVDT_SUCCESS;
     tAVDT_SCB_EVT   evt;
+    
+    AVDT_TRACE_DEBUG("AVDT_ReconfigReq");
 
     /* map handle to scb */
     if ((p_scb = avdt_scb_by_hdl(handle)) == NULL) {
@@ -777,6 +785,8 @@ UINT16 AVDT_ReconfigRsp(UINT8 handle, UINT8 label, UINT8 error_code, UINT8 categ
     tAVDT_SCB       *p_scb;
     tAVDT_SCB_EVT   evt;
     UINT16          result = AVDT_SUCCESS;
+    
+    AVDT_TRACE_DEBUG("AVDT_ReconfigRsp");
 
     /* map handle to scb */
     if ((p_scb = avdt_scb_by_hdl(handle)) == NULL) {

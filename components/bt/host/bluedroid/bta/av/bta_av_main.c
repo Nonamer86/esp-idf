@@ -25,9 +25,11 @@
 #include <assert.h>
 #include <string.h>
 
+#include "bta/bta_av_api.h"
 #include "common/bt_target.h"
 #include "common/bt_trace.h"
 #include "osi/allocator.h"
+#include "stack/avdt_api.h"
 
 #if defined(BTA_AV_INCLUDED) && (BTA_AV_INCLUDED == TRUE)
 #include "bta_av_int.h"
@@ -403,6 +405,8 @@ void bta_av_conn_cback(UINT8 handle, BD_ADDR bd_addr, UINT8 event, tAVDT_CTRL *p
     tBTA_AV_SCB *p_scb = NULL;
     UNUSED(handle);
 
+	APPL_TRACE_DEBUG("|----->> %s", __func__);
+	
 #if( defined BTA_AR_INCLUDED ) && (BTA_AR_INCLUDED == TRUE)
     if (event == BTA_AR_AVDT_CONN_EVT ||
             event == AVDT_CONNECT_IND_EVT || event == AVDT_DISCONNECT_IND_EVT)
@@ -430,9 +434,41 @@ void bta_av_conn_cback(UINT8 handle, BD_ADDR bd_addr, UINT8 event, tAVDT_CTRL *p
                              bd_addr[0], bd_addr[1],
                              bd_addr[2], bd_addr[3],
                              bd_addr[4], bd_addr[5]);
+            
+            APPL_TRACE_DEBUG("%s: p_msg+++++++ %d", __func__, p_msg->hdr.event);
             bta_sys_sendmsg(p_msg);
         }
     }
+    
+    if (event == AVDT_RECONFIG_IND_EVT)
+    {
+		APPL_TRACE_DEBUG("%s: RECONFIG_IND", __func__);
+		
+		if ((p_msg = (tBTA_AV_STR_MSG *) osi_malloc((UINT16) (sizeof(tBTA_AV_STR_MSG)))) != NULL) {
+			
+			APPL_TRACE_DEBUG("%s: 9", __func__);
+			
+			evt =
+				 //BTA_AV_RECONFIG_EVT;
+				 BTA_AV_API_RECONFIG_EVT; //BTA_AV_SIG_CHG_EVT;
+			p_scb = bta_av_addr_to_scb(bd_addr);
+			
+            p_msg->hdr.event = evt;
+            p_msg->hdr.layer_specific = event;
+            p_msg->hdr.offset = p_data->hdr.err_param;
+            bdcpy(p_msg->bd_addr, bd_addr);
+            if (p_scb) {
+                APPL_TRACE_DEBUG("scb hndl x%x, role x%x\n", p_scb->hndl, p_scb->role);
+            }
+            APPL_TRACE_DEBUG("conn_cback bd_addr:%02x-%02x-%02x-%02x-%02x-%02x\n",
+                             bd_addr[0], bd_addr[1],
+                             bd_addr[2], bd_addr[3],
+                             bd_addr[4], bd_addr[5]);
+            
+            APPL_TRACE_DEBUG("%s: p_msg+++++++ %d", __func__, p_msg->hdr.event);
+            bta_sys_sendmsg(p_msg);
+        }
+	}
 }
 
 #if AVDT_REPORTING == TRUE

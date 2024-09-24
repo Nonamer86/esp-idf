@@ -104,8 +104,77 @@ const char *const avdt_scb_evt_str[] = {
     "DELAY_RPT_RSP_TOUT_EVT"
 };
 
+/* verbose action function strings for trace */
+const char *const avdt_scb_action_str[] = {
+    "avdt_scb_hdl_abort_cmd",
+    "avdt_scb_hdl_abort_rsp",
+    "avdt_scb_hdl_close_cmd",
+    "avdt_scb_hdl_close_rsp",
+    "avdt_scb_hdl_getconfig_cmd",
+    "avdt_scb_hdl_getconfig_rsp",
+    "avdt_scb_hdl_open_cmd",
+    "avdt_scb_hdl_open_rej",
+    "avdt_scb_hdl_open_rsp",
+    "avdt_scb_hdl_pkt",
+    "avdt_scb_drop_pkt",
+    "avdt_scb_hdl_reconfig_cmd",
+    "avdt_scb_hdl_reconfig_rsp",
+    "avdt_scb_hdl_security_cmd",
+    "avdt_scb_hdl_security_rsp",
+    "avdt_scb_hdl_setconfig_cmd",
+    "avdt_scb_hdl_setconfig_rej",
+    "avdt_scb_hdl_setconfig_rsp",
+    "avdt_scb_hdl_start_cmd",
+    "avdt_scb_hdl_start_rsp",
+    "avdt_scb_hdl_suspend_cmd",
+    "avdt_scb_hdl_suspend_rsp",
+    "avdt_scb_hdl_tc_close",
+#if AVDT_REPORTING == TRUE
+    "avdt_scb_hdl_tc_close_sto",
 #endif
+    "avdt_scb_hdl_tc_open",
+#if AVDT_REPORTING == TRUE
+    "avdt_scb_hdl_tc_open_sto",
+#endif
+    "avdt_scb_snd_delay_rpt_req",
+    "avdt_scb_hdl_delay_rpt_cmd",
+    "avdt_scb_hdl_delay_rpt_rsp",
+    "avdt_scb_hdl_write_req",
+    "avdt_scb_snd_abort_req",
+    "avdt_scb_snd_abort_rsp",
+    "avdt_scb_snd_close_req",
+    "avdt_scb_snd_stream_close",
+    "avdt_scb_snd_close_rsp",
+    "avdt_scb_snd_getconfig_req",
+    "avdt_scb_snd_getconfig_rsp",
+    "avdt_scb_snd_open_req",
+    "avdt_scb_snd_open_rsp",
+    "avdt_scb_snd_reconfig_req",
+    "avdt_scb_snd_reconfig_rsp",
+    "avdt_scb_snd_security_req",
+    "avdt_scb_snd_security_rsp",
+    "avdt_scb_snd_setconfig_req",
+    "avdt_scb_snd_setconfig_rej",
+    "avdt_scb_snd_setconfig_rsp",
+    "avdt_scb_snd_tc_close",
+    "avdt_scb_cb_err",
+    "avdt_scb_cong_state",
+    "avdt_scb_rej_state",
+    "avdt_scb_rej_in_use",
+    "avdt_scb_rej_not_in_use",
+    "avdt_scb_set_remove",
+    "avdt_scb_free_pkt",
+    "avdt_scb_clr_pkt",
+    "avdt_scb_chk_snd_pkt",
+    "avdt_scb_tc_timer",
+    "avdt_scb_clr_vars",
+    "avdt_scb_dealloc",
+    "avdt_scb_hdl_delay_rpt_tout",
+    "avdt_scb_init_open_req",
+    "avdt_scb_send_delay_report_cmd"
+};
 
+#endif
 
 /* action function list */
 const tAVDT_SCB_ACTION avdt_scb_action[] = {
@@ -553,11 +622,13 @@ void avdt_scb_event(tAVDT_SCB *p_scb, UINT8 event, tAVDT_SCB_EVT *p_data)
     /* set next state */
     if (p_scb->state != state_table[event][AVDT_SCB_NEXT_STATE]) {
         p_scb->state = state_table[event][AVDT_SCB_NEXT_STATE];
+        AVDT_TRACE_EVENT("Next state=%s", avdt_scb_st_str[p_scb->state]);
     }
 
     /* execute action functions */
     for (i = 0; i < AVDT_SCB_ACTIONS; i++) {
         if ((action = state_table[event][i]) != AVDT_SCB_IGNORE) {
+			AVDT_TRACE_DEBUG("---+++---> avdt_scb_event - execute action functions: action=%d/%s", action, avdt_scb_action_str[action]);
             (*avdt_cb.p_scb_act[action])(p_scb, p_data);
         } else {
             break;

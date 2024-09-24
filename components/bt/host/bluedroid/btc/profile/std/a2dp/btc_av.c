@@ -415,6 +415,12 @@ static BOOLEAN btc_av_state_idle_handler(btc_sm_event_t event, void *p_data)
 #endif /* BTC_AV_SINK_INCLUDED */
         break;
 
+	case BTA_AV_REJECT_EVT:
+        BTC_TRACE_WARNING(" Received  BTA_AV_REJECT_EVT \n");
+        btc_report_connection_state(ESP_A2D_CONNECTION_STATE_DISCONNECTING, &(btc_av_cb.peer_bda), 0);
+        //btc_sm_change_state(btc_av_cb.sm_handle, BTC_AV_STATE_IDLE);
+        break;
+
     default:
         BTC_TRACE_WARNING("%s : unhandled event:%s\n", __FUNCTION__,
                  dump_av_sm_event_name(event));

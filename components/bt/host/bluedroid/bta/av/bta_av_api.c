@@ -299,8 +299,11 @@ void BTA_AvReconfig(tBTA_AV_HNDL hndl, BOOLEAN suspend, UINT8 sep_info_idx,
                     UINT8 *p_codec_info, UINT8 num_protect, UINT8 *p_protect_info)
 {
     tBTA_AV_API_RCFG  *p_buf;
+    
+    APPL_TRACE_VERBOSE("-----------1------------");
 
     if ((p_buf = (tBTA_AV_API_RCFG *) osi_malloc((UINT16) (sizeof(tBTA_AV_API_RCFG) + num_protect))) != NULL) {
+		APPL_TRACE_VERBOSE("-----------2------------");
         p_buf->hdr.layer_specific   = hndl;
         p_buf->hdr.event    = BTA_AV_API_RECONFIG_EVT;
         p_buf->num_protect  = num_protect;
@@ -309,6 +312,7 @@ void BTA_AvReconfig(tBTA_AV_HNDL hndl, BOOLEAN suspend, UINT8 sep_info_idx,
         memcpy(p_buf->codec_info, p_codec_info, AVDT_CODEC_SIZE);
         if (p_protect_info && num_protect) {
             memcpy(p_buf->p_protect_info, p_protect_info, num_protect);
+            APPL_TRACE_VERBOSE("-----------3------------");
         }
         bta_sys_sendmsg(p_buf);
     }

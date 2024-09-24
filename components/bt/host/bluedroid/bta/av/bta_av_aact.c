@@ -24,6 +24,7 @@
  *
  ******************************************************************************/
 
+#include "bt_common.h"
 #include "common/bt_target.h"
 #if defined(BTA_AV_INCLUDED) && (BTA_AV_INCLUDED == TRUE)
 
@@ -42,6 +43,8 @@
 #include "bta/bta_ar_api.h"
 #endif
 #include "bta/bta_api.h"
+
+#include "esp_debug_helpers.h"
 
 /*****************************************************************************
 **  Constants
@@ -419,12 +422,17 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
     tBTA_AV_SCB         *p_scb = bta_av_cb.p_scb[index];
     int                 xx;
 
+	APPL_TRACE_DEBUG("%s: event: %d", __func__, event);
+
     if (event == AVDT_DELAY_REPORT_CFM_EVT) {
         APPL_TRACE_DEBUG("%s: AVDT_DELAY_REPORT_CFM_EVT", __func__);
         return;
     }
 
     if (p_data) {
+		
+		APPL_TRACE_DEBUG("%s: 1", __func__);
+		
         if (event == AVDT_SECURITY_IND_EVT) {
             sec_len = (p_data->security_ind.len < BTA_AV_SECURITY_MAX_LEN) ?
                       p_data->security_ind.len : BTA_AV_SECURITY_MAX_LEN;
@@ -436,6 +444,8 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
 
     if (p_scb && (p_msg = (tBTA_AV_STR_MSG *) osi_malloc((UINT16) (sizeof(tBTA_AV_STR_MSG) + sec_len))) != NULL) {
 
+		APPL_TRACE_DEBUG("%s: 2", __func__);
+		
         /* copy event data, bd addr, and handle to event message buffer */
         p_msg->hdr.offset = 0;
 
@@ -448,6 +458,9 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
         }
 
         if (p_data != NULL) {
+			
+			APPL_TRACE_DEBUG("%s: 3", __func__);
+            
             memcpy(&p_msg->msg, p_data, sizeof (tAVDT_CTRL));
             /* copy config params to event message buffer */
             switch (event) {
@@ -459,15 +472,69 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
                                  p_msg->msg.reconfig_cfm.p_cfg->codec_info[9]);
                 break;
 
-
-
-            case AVDT_CONFIG_IND_EVT:
+			case AVDT_RECONFIG_IND_EVT:
+			
+				APPL_TRACE_DEBUG("%s: 4", __func__);
+				
+				/*
+				for (xx = 0; xx < BTA_AV_NUM_STRS; xx++) {
+                        if (bta_av_cb.p_scb[xx]) {
+                                APPL_TRACE_DEBUG("bta_av_cb.p_scb[%d]->state = %d", xx, bta_av_cb.p_scb[xx]->state);
+                                if (bta_av_cb.p_scb[xx]->state == BTA_AV_OPEN_SST) {
+	                                bta_av_cb.p_scb[xx]->state = BTA_AV_RCFG_SST;
+	                                bta_av_cb.p_scb[xx]->coll_mask = 0;
+	                                APPL_TRACE_DEBUG("bta_av_cb.p_scb[%d]->state = -> %d", xx, bta_av_cb.p_scb[xx]->state);
+	                                }
+                                break;
+                            }
+                        }
+				*/
+			
                 /* We might have 2 SEP signallings(A2DP + VDP) with one peer device on one L2CAP.
                  * If we already have a signalling connection with the bd_addr and the streaming
                  * SST is at INIT state, change it to INCOMING state to handle the signalling
                  * from the 2nd SEP.                                                                */
                 if ((bta_av_find_lcb(bd_addr, BTA_AV_LCB_FIND) != NULL) && (bta_av_is_scb_init(p_scb))) {
                     bta_av_set_scb_sst_incoming (p_scb);
+                    
+                    APPL_TRACE_DEBUG("%s: 5", __func__);
+
+                    /* When ACP_CONNECT_EVT was received, we put first available scb to incoming state.
+                     * Later when we receive AVDT_CONFIG_IND_EVT, we use a new p_scb and set its state to
+                     * incoming which we do it above.
+                     * We also have to set the old p_scb state to init to be used later             */
+                    for (xx = 0; xx < BTA_AV_NUM_STRS; xx++) {
+                        if ((bta_av_cb.p_scb[xx]) && (xx != index)) {
+                            if (bta_av_cb.p_scb[xx]->state == BTA_AV_INCOMING_SST) {
+                                bta_av_cb.p_scb[xx]->state = BTA_AV_INIT_SST;
+                                bta_av_cb.p_scb[xx]->coll_mask = 0;
+                                APPL_TRACE_DEBUG("bta_av_cb.p_scb[%d]->state = %d", xx, bta_av_cb.p_scb[xx]->state);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                memcpy(&p_msg->cfg, p_data->config_ind.p_cfg, sizeof(tAVDT_CFG));
+                
+                //bta_av_reconfig (p_scb, p_data->config_ind.p_cfg);
+                //UINT16 res = AVDT_ReconfigReq(handle, p_data->config_ind.p_cfg);
+                //APPL_TRACE_DEBUG("%s: AVDT_ReconfigReq result: %d", __func__, res);
+                
+                break;
+
+            case AVDT_CONFIG_IND_EVT:
+                /* We might have 2 SEP signallings(A2DP + VDP) with one peer device on one L2CAP.
+                 * If we already have a signalling connection with the bd_addr and the streaming
+                 * SST is at INIT state, change it to INCOMING state to handle the signalling
+                 * from the 2nd SEP.*/
+                 
+                 APPL_TRACE_DEBUG("%s: 6", __func__);
+                 
+                if ((bta_av_find_lcb(bd_addr, BTA_AV_LCB_FIND) != NULL) && (bta_av_is_scb_init(p_scb))) {
+                    bta_av_set_scb_sst_incoming (p_scb);
+
+				APPL_TRACE_DEBUG("%s: 7", __func__);
 
                     /* When ACP_CONNECT_EVT was received, we put first available scb to incoming state.
                      * Later when we receive AVDT_CONFIG_IND_EVT, we use a new p_scb and set its state to
@@ -546,6 +613,7 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
         p_msg->hdr.layer_specific = p_scb->hndl;
         p_msg->handle   = handle;
         p_msg->avdt_event = event;
+        APPL_TRACE_VERBOSE("event: %d", p_msg->avdt_event);  
         bta_sys_sendmsg(p_msg);
     }
 
@@ -553,6 +621,7 @@ static void bta_av_proc_stream_evt(UINT8 handle, BD_ADDR bd_addr, UINT8 event, t
     /* false-positive: bta_av_conn_cback only processes AVDT_CONNECT_IND_EVT and AVDT_DISCONNECT_IND_EVT event
      *                 these 2 events always have associated p_data */
     if (p_data) {
+		APPL_TRACE_DEBUG("%s: 8", __func__);
         bta_av_conn_cback(handle, bd_addr, event, p_data);
     } else {
         APPL_TRACE_EVENT("%s: p_data is null", __func__);
@@ -1114,6 +1183,10 @@ void bta_av_config_ind (tBTA_AV_SCB *p_scb, tBTA_AV_DATA *p_data)
     tBTA_AV_STR_MSG  *p_msg = (tBTA_AV_STR_MSG *)p_data;
     UNUSED(p_data);
 
+	APPL_TRACE_DEBUG("<<<<<---->>>>> bta_av_config_ind: use_rc: %d cur_psc_mask:0x%x", p_scb->use_rc, p_scb->cur_psc_mask);
+	
+	//esp_backtrace_print(20);
+	
     local_sep = bta_av_get_scb_sep_type(p_scb, p_msg->handle);
     p_scb->avdt_label = p_data->str_msg.msg.hdr.label;
     memcpy(p_scb->cfg.codec_info, p_evt_cfg->codec_info, AVDT_CODEC_SIZE);
@@ -2792,9 +2865,8 @@ void bta_av_rcfg_cfm (tBTA_AV_SCB *p_scb, tBTA_AV_DATA *p_data)
 {
     UINT8   err_code = p_data->str_msg.msg.hdr.err_code;
 
-    /*
-    APPL_TRACE_DEBUG("bta_av_rcfg_cfm");
-    */
+    APPL_TRACE_DEBUG("=========== bta_av_rcfg_cfm ============");
+    
     if (err_code) {
         APPL_TRACE_ERROR("reconfig rejected, try close");
         /* Disable reconfiguration feature only with explicit rejection(not with timeout) */

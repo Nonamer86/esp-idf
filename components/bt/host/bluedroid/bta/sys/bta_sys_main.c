@@ -45,6 +45,7 @@
 #include "osi/allocator.h"
 #include "osi/mutex.h"
 
+#include "esp_debug_helpers.h"
 
 /* system manager control block definition */
 #if BTA_DYNAMIC_MEMORY == FALSE
@@ -493,6 +494,8 @@ void bta_sys_event(void * param)
 
     /* get subsystem id from event */
     id = (UINT8) (p_msg->event >> 8);
+    
+    //esp_backtrace_print(20);
 
     /* verify id and call subsystem event handler */
     if ((id < BTA_ID_MAX) && (bta_sys_cb.reg[id] != NULL)) {
@@ -569,6 +572,7 @@ BOOLEAN bta_sys_is_register(UINT8 id)
 *******************************************************************************/
 void bta_sys_sendmsg(void *p_msg)
 {
+	APPL_TRACE_DEBUG("|----->> %s", __func__);
     // There is a race condition that occurs if the stack is shut down while
     // there is a procedure in progress that can schedule a task via this
     // message queue. This causes |btu_bta_msg_queue| to get cleaned up before

@@ -24,6 +24,9 @@
  ******************************************************************************/
 
 #include <string.h>
+#include "bta/bta_av_api.h"
+#include "bta_av_int.h"
+#include "btc_av.h"
 #include "stack/bt_types.h"
 #include "common/bt_target.h"
 #include "common/bt_defs.h"
@@ -676,20 +679,37 @@ void avdt_scb_drop_pkt(tAVDT_SCB *p_scb, tAVDT_SCB_EVT *p_data)
 void avdt_scb_hdl_reconfig_cmd(tAVDT_SCB *p_scb, tAVDT_SCB_EVT *p_data)
 {
     /* if command not supported */
-    if (p_scb->cs.nsc_mask & AVDT_NSC_RECONFIG) {
+    if (false){//(p_scb->cs.nsc_mask & AVDT_NSC_RECONFIG) {
         /* send reject */
         p_data->msg.hdr.err_code = AVDT_ERR_NSC;
         p_data->msg.hdr.err_param = 0;
         avdt_scb_event(p_scb, AVDT_SCB_API_RECONFIG_RSP_EVT, p_data);
     } else {
         /* store requested configuration */
+        AVDT_TRACE_DEBUG( "avdt_scb_hdl_reconfig_cmd: store requested configuration: num_codec %d", p_data->msg.reconfig_cmd.p_cfg->num_codec);
         memcpy(&p_scb->req_cfg, p_data->msg.reconfig_cmd.p_cfg, sizeof(tAVDT_CFG));
 
         /* call application callback */
-        (*p_scb->cs.p_ctrl_cback)(avdt_scb_to_hdl(p_scb),
-                                  NULL,
-                                  AVDT_RECONFIG_IND_EVT,
-                                  (tAVDT_CTRL *) &p_data->msg.reconfig_cmd);
+        //AVDT_TRACE_DEBUG( "avdt_scb_hdl_reconfig_cmd: call application callback  handle (or seid) %d",  avdt_scb_to_hdl(p_scb));
+        (*p_scb->cs.p_ctrl_cback)(avdt_scb_to_hdl(p_scb), 
+        							p_scb->p_ccb ? p_scb->p_ccb->peer_addr : NULL,
+        							AVDT_RECONFIG_IND_EVT,
+        							(tAVDT_CTRL *) &p_data->msg.reconfig_cmd);
+        
+        //BTA_AvReconfig(avdt_scb_to_hdl(p_scb), false, p_data->msg.reconfig_cmd.hdr.seid, p_data->msg.reconfig_cmd.p_cfg->codec_info, p_data->msg.reconfig_cmd.p_cfg->num_protect, p_data->msg.reconfig_cmd.p_cfg->protect_info);
+        //bta_av_config_ind (p_scb->, p_data);
+        
+        //event
+        //avdt_scb_event(p_scb, BTA_AV_STR_CONFIG_IND_EVT, p_data);
+        //avdt_scb_event(p_scb, AVDT_SCB_API_RECONFIG_REQ_EVT, p_data);
+        //avdt_scb_event(p_scb, AVDT_SCB_HDL_RECONFIG_CMD, p_data);
+        //avdt_scb_event(p_scb, AVDT_SCB_MSG_RECONFIG_CMD_EVT, p_data); //recursive
+        
+        //bta_av_reconfig (*p_scb, *p_data)
+        
+        p_data->msg.hdr.err_code = 0;//AVDT_ERR_NSC;
+        p_data->msg.hdr.err_param = 0;
+        avdt_scb_event(p_scb, AVDT_SCB_API_RECONFIG_RSP_EVT, p_data);
     }
 }
 
@@ -1610,6 +1630,7 @@ void avdt_scb_snd_reconfig_req(tAVDT_SCB *p_scb, tAVDT_SCB_EVT *p_data)
 *******************************************************************************/
 void avdt_scb_snd_reconfig_rsp(tAVDT_SCB *p_scb, tAVDT_SCB_EVT *p_data)
 {
+	AVDT_TRACE_DEBUG("------> avdt_scb_snd_reconfig_rsp err_code=%d", p_data->msg.hdr.err_code);
     if (p_data->msg.hdr.err_code == 0) {
         /* store new configuration */
         if (p_scb->req_cfg.num_codec > 0) {
