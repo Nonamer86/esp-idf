@@ -57,7 +57,7 @@ static const tA2DP_DECODER_INTERFACE a2dp_decoder_interface_aptx = {
     NULL,  // decoder_start
     NULL,  // decoder_suspend
     NULL,  // decoder_configure
-    a2dp_aptx_decoder_configure,
+    a2dp_aptx_decoder_configure
 };
 
 tA2D_STATUS A2DP_BuildInfoAptx(uint8_t media_type,
@@ -87,6 +87,8 @@ tA2D_STATUS A2DP_ParseInfoAptx(tA2DP_APTX_CIE* p_ie,
   uint8_t losc;
   uint8_t media_type;
   tA2D_CODEC_TYPE codec_type;
+  
+  APPL_TRACE_DEBUG("|----> %s", __func__);
 
   if (p_ie == NULL || p_codec_info == NULL) return A2D_INVALID_PARAMS;
 

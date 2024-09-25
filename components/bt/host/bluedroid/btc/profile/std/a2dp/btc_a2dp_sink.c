@@ -99,7 +99,7 @@ typedef struct {
     osi_thread_t        *btc_aa_snk_task_hdl;
     const tA2DP_DECODER_INTERFACE* decoder;
     unsigned char decode_buf[4096];
-    //a2dp_sink_media_pkt_seq_num_t   media_pkt_seq_num;
+    a2dp_sink_media_pkt_seq_num_t   media_pkt_seq_num;
 } a2dp_sink_local_param_t;
 
 static void btc_a2dp_sink_thread_init(UNUSED_ATTR void *context);
@@ -302,8 +302,8 @@ void btc_a2dp_sink_set_rx_flush(BOOLEAN enable)
 {
     APPL_TRACE_EVENT("## DROP RX %d ##\n", enable);
     if (enable == FALSE) {
-        //a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num = 0x1;
-        //a2dp_sink_local_param.media_pkt_seq_num.seq_num_recount = true;
+        a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num = 0x1;
+        a2dp_sink_local_param.media_pkt_seq_num.seq_num_recount = true;
     }
     a2dp_sink_local_param.btc_aa_snk_cb.rx_flush = enable;
 }
@@ -394,10 +394,22 @@ static void btc_a2dp_sink_handle_decoder_reset(tBTC_MEDIA_SINK_CFG_UPDATE *p_msg
             a2dp_sink_local_param.decoder->decoder_cleanup();
         }
 
-	    if (a2dp_sink_local_param.decoder->decoder_configure){
-	        a2dp_sink_local_param.decoder->decoder_configure(p_msg->codec_info);
-	    }
-	}
+        // Initialize new decoder
+		a2dp_sink_local_param.decoder = decoder;
+		if (a2dp_sink_local_param.decoder->decoder_init &&
+			!a2dp_sink_local_param.decoder->decoder_init(btc_a2d_data_cb_to_app)) {
+			APPL_TRACE_ERROR("%s: Decoder failed to initialize", __func__);
+			return;
+		}
+		} else {
+			if (a2dp_sink_local_param.decoder->decoder_reset) {
+				a2dp_sink_local_param.decoder->decoder_reset();
+			}
+		}
+
+		if (a2dp_sink_local_param.decoder->decoder_configure){
+			a2dp_sink_local_param.decoder->decoder_configure(p_msg->codec_info);
+		}
 }
 
 /*******************************************************************************
@@ -421,18 +433,6 @@ static void btc_a2dp_sink_handle_inc_media(BT_HDR *p_msg)
     if (!btc_a2dp_control_get_datachnl_stat()) {
         return;
     }
-
-    /*if (p_msg->layer_specific != a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num) {
-        // Because the sequence number of some devices is not recounted 
-        if (!a2dp_sink_local_param.media_pkt_seq_num.seq_num_recount ||
-                a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num != 0x1) {
-            APPL_TRACE_WARNING("Sequence numbers error, recv:0x%x, expect:0x%x, recount:0x%x",
-                                p_msg->layer_specific, a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num,
-                                a2dp_sink_local_param.media_pkt_seq_num.seq_num_recount);
-        }
-    }
-    a2dp_sink_local_param.media_pkt_seq_num.expected_seq_num  = p_msg->layer_specific + 1;
-    a2dp_sink_local_param.media_pkt_seq_num.seq_num_recount = false;*/
 
     if (a2dp_sink_local_param.decoder->decode_packet_header) {
         a2dp_sink_local_param.decoder->decode_packet_header(p_msg);

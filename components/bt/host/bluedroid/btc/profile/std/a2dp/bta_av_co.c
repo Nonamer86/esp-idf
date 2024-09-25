@@ -599,7 +599,7 @@ void bta_av_co_audio_setconfig(tBTA_AV_HNDL hndl,
     UINT8 status = A2D_SUCCESS;
     UINT8 category = A2D_SUCCESS;
     BOOLEAN recfg_needed = FALSE;
-    UINT8 codec_cfg_status = A2D_SUCCESS;
+    BOOLEAN codec_cfg_supported = FALSE;
     UNUSED(seid);
     UNUSED(addr);
 
@@ -648,15 +648,18 @@ void bta_av_co_audio_setconfig(tBTA_AV_HNDL hndl,
 #endif
     if (status == A2D_SUCCESS) {
         if (AVDT_TSEP_SNK == t_local_sep) {
-            codec_cfg_status = A2DP_IsPeerSourceCodecSupported(p_codec_info);
+            codec_cfg_supported = A2DP_IsPeerSourceCodecSupported(p_codec_info);
             APPL_TRACE_DEBUG(" Peer is  A2DP SRC ");
         }
         if (AVDT_TSEP_SRC == t_local_sep) {
-            codec_cfg_status = A2DP_IsSinkCodecSupported(p_codec_info);
+            codec_cfg_supported = A2DP_IsSinkCodecSupported(p_codec_info);
             APPL_TRACE_DEBUG(" Peer is A2DP SINK ");
         }
+        
+        APPL_TRACE_DEBUG(":::: codec_cfg_supported= %d", codec_cfg_supported);
+        
         /* Check if codec configuration is supported */
-        if (codec_cfg_status == A2D_SUCCESS) {
+        if (codec_cfg_supported) {
 
             /* Protect access to bta_av_co_cb.codec_cfg */
             osi_mutex_global_lock();
@@ -685,10 +688,10 @@ void bta_av_co_audio_setconfig(tBTA_AV_HNDL hndl,
     }
 
     if (status != A2D_SUCCESS) {
-        APPL_TRACE_DEBUG("bta_av_co_audio_setconfig reject s=%d c=%d", codec_cfg_status, category);
+        APPL_TRACE_DEBUG("bta_av_co_audio_setconfig reject s=%d c=%d", status, category);
 
         /* Call call-in rejecting the configuration */
-        bta_av_ci_setconfig(hndl, codec_cfg_status, category, 0, NULL, FALSE, avdt_handle);
+        bta_av_ci_setconfig(hndl, status, category, 0, NULL, FALSE, avdt_handle);
     } else {
         /* Mark that this is an acceptor peer */
         p_peer->acp = TRUE;

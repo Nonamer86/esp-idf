@@ -4,12 +4,11 @@
 #include "ldacdec.h"
 #include "utility.h"
 
-
 #define DEF_MDCTWINDOW(i) float* MdctWindow_##i;
 #define DEF_IMDCTWINDOW(i) float ImdctWindow_##i[1<<i];
 #define DEF_SHUFFLETABLE(i) int ShuffleTable_##i[1<<i];
 
-#define DEF_GET_WINDOW_FUNC(table, type) inline type* Get##table(int i) {	\
+#define DEF_GET_WINDOW_FUNC(table, type) static inline type* Get##table(int i) {	\
 	switch(i) {																\
 		case 7: return table##_7;											\
 		case 8: return table##_8;											\
@@ -22,7 +21,7 @@
 #define DEF_SINTABLE(i) float SinTable_##i[1<<i]
 #define DEF_COSTABLE(i) float CosTable_##i[1<<i]
 
-#define DEF_GET_TABLE_FUNC(table) inline float* Get##table(int i) {		\
+#define DEF_GET_TABLE_FUNC(table) static inline float* Get##table(int i) {		\
 	switch(i) {															\
 		case 0: return table##_0;										\
 		case 1: return table##_1;										\
