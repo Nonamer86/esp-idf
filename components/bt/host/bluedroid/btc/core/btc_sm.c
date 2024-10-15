@@ -166,6 +166,8 @@ bt_status_t btc_sm_change_state(btc_sm_handle_t handle, btc_sm_state_t state)
 {
     bt_status_t status = BT_STATUS_SUCCESS;
     btc_sm_cb_t *p_cb = (btc_sm_cb_t *)handle;
+    
+    BTC_TRACE_DEBUG("|-> %s", __FUNCTION__);
 
     if (p_cb == NULL) {
         BTC_TRACE_ERROR("%s : Invalid handle", __FUNCTION__);
@@ -185,6 +187,7 @@ bt_status_t btc_sm_change_state(btc_sm_handle_t handle, btc_sm_state_t state)
         status = BT_STATUS_UNHANDLED;
     }
 
+	BTC_TRACE_DEBUG("btc_sm_change_state: %d", status);
     return status;
 }
 

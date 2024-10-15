@@ -219,6 +219,7 @@ static void btu_bta_alarm_process(void *param)
 bool btu_task_post(uint32_t sig, void *param, uint32_t timeout)
 {
     bool status = false;
+	APPL_TRACE_EVENT("|-> btu_task_post");
 
     switch (sig) {
         case SIG_BTU_START_UP:
