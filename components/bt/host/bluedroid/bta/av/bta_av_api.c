@@ -166,7 +166,7 @@ void BTA_AvOpen(BD_ADDR bd_addr, tBTA_AV_HNDL handle, BOOLEAN use_rc, tBTA_SEC s
 {
     tBTA_AV_API_OPEN  *p_buf;
 
-	BTC_TRACE_DEBUG("|-> BTA_AvOpen");
+	//BTC_TRACE_DEBUG("|-> BTA_AvOpen");
     if ((p_buf = (tBTA_AV_API_OPEN *) osi_malloc(sizeof(tBTA_AV_API_OPEN))) != NULL) {
         p_buf->hdr.event = BTA_AV_API_OPEN_EVT;
         p_buf->hdr.layer_specific   = handle;
@@ -176,7 +176,7 @@ void BTA_AvOpen(BD_ADDR bd_addr, tBTA_AV_HNDL handle, BOOLEAN use_rc, tBTA_SEC s
         p_buf->switch_res = BTA_AV_RS_NONE;
         p_buf->uuid = uuid;
         bta_sys_sendmsg(p_buf);
-        BTC_TRACE_DEBUG("BTA_AvOpen |->");
+        //BTC_TRACE_DEBUG("BTA_AvOpen |->");
     }
 }
 

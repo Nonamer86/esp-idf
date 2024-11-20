@@ -337,11 +337,11 @@ static BOOLEAN btc_av_state_idle_handler(btc_sm_event_t event, void *p_data)
             memcpy(&btc_av_cb.peer_bda, &((btc_av_connect_req_t *)p_data)->target_bda,
                    sizeof(bt_bdaddr_t));
             if (g_av_with_rc) {
-				BTC_TRACE_DEBUG("BTA_AvOpen TRUE");
+				//BTC_TRACE_DEBUG("BTA_AvOpen TRUE");
                 BTA_AvOpen(btc_av_cb.peer_bda.address, btc_av_cb.bta_handle,
                         TRUE, BTA_SEC_AUTHENTICATE, ((btc_av_connect_req_t *)p_data)->uuid);
             } else {
-				BTC_TRACE_DEBUG("BTA_AvOpen FALSE");
+				//BTC_TRACE_DEBUG("BTA_AvOpen FALSE");
                 BTA_AvOpen(btc_av_cb.peer_bda.address, btc_av_cb.bta_handle,
                         FALSE, BTA_SEC_AUTHENTICATE, ((btc_av_connect_req_t *)p_data)->uuid);
             }

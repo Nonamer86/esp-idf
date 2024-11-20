@@ -573,7 +573,7 @@ void bta_sys_sendmsg(void *p_msg)
     // there is a procedure in progress that can schedule a task via this
     // message queue. This causes |btu_bta_msg_queue| to get cleaned up before
     // it gets used here; hence we check for NULL before using it.
-    APPL_TRACE_EVENT("|-> bta_sys_sendmsg");
+    //APPL_TRACE_EVENT("|-> bta_sys_sendmsg");
     if (btu_task_post(SIG_BTU_BTA_MSG, p_msg, OSI_THREAD_MAX_TIMEOUT) == false) {
         osi_free(p_msg);
     }
