@@ -574,7 +574,7 @@ void bta_av_stream_data_cback(UINT8 handle, BT_HDR *p_pkt, UINT32 time_stamp, UI
 {
     int index = 0;
     tBTA_AV_SCB         *p_scb ;
-    APPL_TRACE_WARNING("bta_av_stream_data_cback avdt_handle: %d pkt_len=0x%x  ofst = 0x%x", handle, p_pkt->len, p_pkt->offset);
+    APPL_TRACE_DEBUG("bta_av_stream_data_cback avdt_handle: %d pkt_len=0x%x  ofst = 0x%x", handle, p_pkt->len, p_pkt->offset);
     APPL_TRACE_DEBUG(" Number of frames 0x%x", *((UINT8 *)(p_pkt + 1) + p_pkt->offset));
     APPL_TRACE_DEBUG("Sequence Number 0x%x", p_pkt->layer_specific);
     /* Get  SCB  and correct sep type*/
